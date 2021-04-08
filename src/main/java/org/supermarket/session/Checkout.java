@@ -1,39 +1,46 @@
 package org.supermarket.session;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.supermarket.rules.PricingRule;
 import org.supermarket.rules.SpecialPrice;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Transaction reference
  */
 @Getter
-@RequiredArgsConstructor
-public class Transaction {
-    private final long transactionId;
+public class Checkout {
+    private final String transactionId;
     private final List<Item> basket = new ArrayList<>();
+    Map<String, PricingRule> pricingRuleMap;
+
+    public Checkout(List<PricingRule> pricingRules) {
+        this.transactionId = UUID.randomUUID().toString();
+        // Generate pricing rules map
+        if (pricingRules == null) {
+            pricingRuleMap = new HashMap<>();
+        } else {
+            this.pricingRuleMap = pricingRules.stream().collect(Collectors.toMap(PricingRule::getItem, item -> item));
+        }
+    }
 
     /**
      * Add item to basket
      *
      * @param item Item
      */
-    public void addItem(Item item) {
+    public void scan(Item item) {
         this.basket.add(item);
     }
 
     /**
      * Calculate total price of items in the basket including special prices
-     * @param pricingRuleMap Pricing rules as a map
+     *
      * @return Total value of the items in the basket
      */
-    public double getTotalPrice(Map<String, PricingRule> pricingRuleMap) {
+    public double getTotalPrice() {
         double total = 0;
         // Grout items in the basket by item id and collect as a Map (ItemId -> Item List)
         Map<String, List<Item>> groupedItems = basket.stream().collect(Collectors.groupingBy(Item::getId));

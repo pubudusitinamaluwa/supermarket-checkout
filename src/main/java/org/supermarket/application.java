@@ -3,13 +3,11 @@ package org.supermarket;
 import org.supermarket.rules.PricingRule;
 import org.supermarket.rules.SpecialPrice;
 import org.supermarket.session.Item;
-import org.supermarket.session.Transaction;
+import org.supermarket.session.Checkout;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 public class application {
     public static void main(String[] args) {
@@ -20,21 +18,18 @@ public class application {
         pricingRules.add(new PricingRule("C", 20, null));
         pricingRules.add(new PricingRule("D", 10, null));
 
-        // Generate pricing rules map
-        Map<String, PricingRule> pricingRuleMap = pricingRules.stream().collect(Collectors.toMap(PricingRule::getItem, item -> item));
-
         // Create transaction
-        Transaction transaction = new Transaction(1);
+        Checkout checkout = new Checkout(pricingRules);
         // Add random items to the bucket
         Random r = new Random();
         String alphabet = "ABCD";
         for (int i = 0; i < r.nextInt(7) + 3; i++) {
             String randomItemId = String.valueOf(alphabet.charAt(r.nextInt(alphabet.length())));
-            transaction.addItem(new Item(randomItemId));
+            checkout.scan(new Item(randomItemId));
             System.out.println(randomItemId);
         }
         // Calculate total price
-        double totalPrice = transaction.getTotalPrice(pricingRuleMap);
+        double totalPrice = checkout.getTotalPrice();
         System.out.println("Total = $" + totalPrice);
     }
 }
